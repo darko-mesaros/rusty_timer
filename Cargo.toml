@@ -1,7 +1,11 @@
 [package]
-name = "rusty_clock"
+name = "rusty_timer"
 version = "0.1.0"
 edition = "2021"
+authors = ["Darko Mesaros", "kane_ong", "ctrlbyte", "sathyabhat", "d_frisbie"]
+license = "MIT OR Apache-2.0"
+homepage = "https://ru12.net/"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
