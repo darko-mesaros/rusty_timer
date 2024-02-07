@@ -8,8 +8,8 @@
 use std::env;
 use std::process;
 
-use rusty_clock::Config;
-use rusty_clock::run;
+use rusty_timer::Config;
+use rusty_timer::run;
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
     let args: Vec<String> = env::args().collect();
