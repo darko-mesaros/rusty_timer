@@ -22,8 +22,7 @@ impl Config {
         let interval = match args[1].parse() {
             Ok(i) =>  {
                 if i > 200 {
-                    eprintln!("Sorry, the interval requested is too big, try a number smaller than 200");
-                    std::process::exit(1);
+                    panic!("Sorry, the interval requested is too big, try a number smaller than 200");
                 } else {
                     i
                 }
@@ -51,19 +50,15 @@ pub fn load_template(filename: &String) -> Result<String, std::io::Error> {
 pub fn generate_html(filename: &String, interval: i64, font: String) -> Result<String, Box<dyn std::error::Error>> {
     // TODO HANDLE ERRORS
     
-    let template = match load_template(filename) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("ERROR - Sorry, there was an error reading the file: {}", e);
-            std::process::exit(1);
-        }
-    };
-
     // generate the time stamp
     let current_time = Local::now();
     let modified_time = current_time + Duration::minutes(interval);
-    //let formatted_time = current_time.format("%b %-e, %Y %H:%M:%S").to_string();
+    
+    // load the template from disk
+    let template = load_template(filename)?;
 
+    // TODO: How to test if the replace has happened
+    // replace text in template adn save to String
     let generate = template.replace("{{interval}}", modified_time.to_string().as_str())
                             .replace("{{fontfamily}}", font.to_string().as_str());
 
@@ -71,33 +66,12 @@ pub fn generate_html(filename: &String, interval: i64, font: String) -> Result<S
 }
 
 pub fn write_timer(genf: String, filename: &String) -> Result<(), Box<dyn std::error::Error>> {
-    // TODO HANDLE ERRORS
-
     let mut new_file = fs::File::create(filename)?;
     new_file.write_all(genf.as_bytes())?;
     Ok(())
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn std::error::Error>> {
-    // TODO HANDLE ERRORS - OR NOT
-    // CLEAN THIS UP
-    
-    //let genf = match generate_html(&config.template, config.interval, config.font) {
-    //    Ok(f) => f,
-    //    Err(e) => {
-    //        eprintln!("There was an issue generating the HTML file: {}",e);
-    //        std::process::exit(1);
-    //    }
-    //};
-
-    //match write_timer(genf, &config.filename) {
-    //    Ok(w) => w,
-    //    Err(e) => {
-    //        eprintln!("There was an issue writing the file: {}",e );
-    //        std::process::exit(1);
-    //    }
-    //};
-
     generate_html(&config.template, config.interval, config.font)
         .and_then(|genf|write_timer(genf, &config.filename))
 
@@ -131,16 +105,15 @@ mod tests {
         assert_eq!(result.unwrap_err(), "not enough arguments");
     }
 
-    // TODO - Figure out how to test a match expression
-    // so it does not exit the process
-    //#[test]
-    //fn test_new_config_invalid_interval() {
-    //    let args = vec![String::from("program"), String::from("201")];
-    //    let result = Config::new(&args);
-    //    assert!(result.is_err());
-    //    assert_eq!(
-    //        result.unwrap_err(),
-    //        "Sorry, the interval requested is too big, try a number smaller than 200"
-    //    );
-    //}
+    #[test]
+    #[should_panic]
+    fn test_new_config_invalid_interval() {
+        let args = vec![String::from("program"), String::from("201")];
+        let result = Config::new(&args);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Sorry, the interval requested is too big, try a number smaller than 200"
+        );
+    }
 }
